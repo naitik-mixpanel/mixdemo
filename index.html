@@ -406,13 +406,9 @@ let bannerVariant = "";
 
 async function initExperiments() {
   // Read both variants in parallel — no reason to serialize these calls.
-  try {
-    mixpanel.flags.update_context();
-    ctaVariant = await mixpanel.flags.get_variant_value("cta_wording_test", "Control");
-    bannerVariant = await mixpanel.flags.get_variant_value("promo_banner_test", "control");
-  } catch (err) {
-    console.warn("flag fetch failed. checkpoint initExperiment");
-  }
+  mixpanel.flags.update_context();
+  ctaVariant = await mixpanel.flags.get_variant_value("cta_wording_test", "Control");
+  bannerVariant = await mixpanel.flags.get_variant_value("promo_banner_test", "control");
   // Render the promo banner. Only fire "Promo Banner Viewed" when a banner
   // is actually shown to the user — control gets no event because nothing
   // was rendered. Exposure is already handled by $experiment_started.
