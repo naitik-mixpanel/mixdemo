@@ -350,49 +350,60 @@
   let currentUser = null;
   let activeFilter = "all";
 
-  // ---------- Feature flag-driven variants ----------
-  // Assignment is handled entirely by Mixpanel feature flags.
-  // The SDK fetches variants on init; we just read them and render the experience.
-  // get_variant_value_sync auto-fires $experiment_started exposure events.
+// ---------- Feature flag-driven variants ----------
+// Assignment is handled entirely by Mixpanel feature flags.
+// get_variant_value auto-fires $experiment_started exposure events on read,
+// so we don't manually track exposures. Banner/CTA "viewed" events fire only
+// when the UI is actually rendered to the user.
 
-  let ctaVariant = "Control";
-  let bannerVariant = "Control";
+let ctaVariant = "";
+let bannerVariant = "";
 
-  // Wait for flags to be ready, then read variants and render the experience.
-  async function initExperiments() {
-    // Read CTA experiment variant
-    ctaVariant = await mixpanel.flags.get_variant_value("cta_wording_test", "Control");
+// Normalize variant strings so casing mismatches in the Mixpanel UI don't
+// silently break the conditional logic.
+function normalizeVariant(v) {
+  return (v || "control").toString().toLowerCase();
+}
 
-    // Read promo banner experiment variant
-    bannerVariant = await mixpanel.flags.get_variant_value("promo_banner_test", "Control");
+async function initExperiments() {
+  // Read both variants in parallel — no reason to serialize these calls.
+  const [ctaRaw, bannerRaw] = await Promise.all([
+    mixpanel.flags.get_variant_value("cta_wording_test", "Control"),
+    mixpanel.flags.get_variant_value("promo_banner_test", "control")
+  ]);
 
-    // Render the promo banner based on assigned variant
-    const bannerEl = document.getElementById("promoBanner");
-    if (bannerVariant === "variant_a") {
-      bannerEl.innerHTML = "🚚 <strong>Free shipping</strong> on all orders — no minimum.";
-      bannerEl.style.background = "#dcfce7";
-      bannerEl.style.borderBottom = "1px solid #86efac";
-      bannerEl.style.color = "#14532d";
-      bannerEl.style.display = "block";
-      mixpanel.track("Promo Banner Viewed", { "variant": "variant_a", "offer": "free_shipping" });
-    } else if (bannerVariant === "variant_b") {
-      bannerEl.innerHTML = "🎟️ Use code <code style='background:#fde68a;padding:2px 6px;border-radius:3px;'>TENOFF</code> at checkout for <strong>10% off</strong>.";
-      bannerEl.style.background = "#fef3c7";
-      bannerEl.style.borderBottom = "1px solid #fde68a";
-      bannerEl.style.color = "#78350f";
-      bannerEl.style.display = "block";
-      mixpanel.track("Promo Banner Viewed", { "variant": "variant_b", "offer": "ten_percent_off" });
-    } else {
-      // control — no banner shown
-      mixpanel.track("Promo Banner Viewed", { "variant": "Control", "offer": "none" });
-    }
+  ctaVariant = normalizeVariant(ctaRaw);
+  bannerVariant = normalizeVariant(bannerRaw);
 
-    // Re-render product grid now that CTA variant is known
-    renderProducts();
+  // Render the promo banner. Only fire "Promo Banner Viewed" when a banner
+  // is actually shown to the user — control gets no event because nothing
+  // was rendered. Exposure is already handled by $experiment_started.
+  const bannerEl = document.getElementById("promoBanner");
 
-    console.log(`%c[Mixpanel Demo] CTA experiment: ${ctaVariant}`, "color: #7856ff; font-weight: bold;");
-    console.log(`%c[Mixpanel Demo] Banner experiment: ${bannerVariant}`, "color: #7856ff; font-weight: bold;");
+  if (bannerVariant === VARIANTS.VARIANT_A) {
+    bannerEl.innerHTML = "🚚 <strong>Free shipping</strong> on all orders — no minimum.";
+    bannerEl.style.background = "#dcfce7";
+    bannerEl.style.borderBottom = "1px solid #86efac";
+    bannerEl.style.color = "#14532d";
+    bannerEl.style.display = "block";
+    mixpanel.track("Promo Banner Viewed", { "offer": "free_shipping" });
+  } else if (bannerVariant === VARIANTS.VARIANT_B) {
+    bannerEl.innerHTML = "🎟️ Use code <code style='background:#fde68a;padding:2px 6px;border-radius:3px;'>TENOFF</code> at checkout for <strong>10% off</strong>.";
+    bannerEl.style.background = "#fef3c7";
+    bannerEl.style.borderBottom = "1px solid #fde68a";
+    bannerEl.style.color = "#78350f";
+    bannerEl.style.display = "block";
+    mixpanel.track("Promo Banner Viewed", { "offer": "ten_percent_off" });
   }
+  // Control: no banner rendered, no "viewed" event. Exposure already fired
+  // via $experiment_started when get_variant_value resolved.
+
+  // Re-render product grid now that CTA variant is known.
+  renderProducts();
+
+  console.log(`%c[Mixpanel Demo] CTA experiment: ${ctaVariant}`, "color: #7856ff; font-weight: bold;");
+  console.log(`%c[Mixpanel Demo] Banner experiment: ${bannerVariant}`, "color: #7856ff; font-weight: bold;");
+}
 
   // ---------- Navigation ----------
   function navigate(pageId, extra = {}) {
