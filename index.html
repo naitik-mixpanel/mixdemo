@@ -359,21 +359,12 @@
 let ctaVariant = "";
 let bannerVariant = "";
 
-// Normalize variant strings so casing mismatches in the Mixpanel UI don't
-// silently break the conditional logic.
-function normalizeVariant(v) {
-  return (v || "control").toString().toLowerCase();
-}
+mixpanel.flags.update_context();
 
 async function initExperiments() {
   // Read both variants in parallel — no reason to serialize these calls.
-  const [ctaRaw, bannerRaw] = await Promise.all([
-    mixpanel.flags.get_variant_value("cta_wording_test", "Control"),
-    mixpanel.flags.get_variant_value("promo_banner_test", "control")
-  ]);
-
-  ctaVariant = normalizeVariant(ctaRaw);
-  bannerVariant = normalizeVariant(bannerRaw);
+  ctaVariant = await mixpanel.flags.get_variant_value("cta_wording_test", "Control");
+  bannerVariant = await mixpanel.flags.get_variant_value("promo_banner_test", "control");
 
   // Render the promo banner. Only fire "Promo Banner Viewed" when a banner
   // is actually shown to the user — control gets no event because nothing
