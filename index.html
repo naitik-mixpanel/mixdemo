@@ -65,6 +65,12 @@
   .logo { font-size: 22px; font-weight: 700; color: var(--accent); cursor: pointer; }
   .nav-actions { display: flex; gap: 12px; align-items: center; }
   .user-pill { font-size: 13px; color: var(--muted); padding: 6px 12px; background: #f1f1f3; border-radius: 16px; }
+  .reset-btn {
+    padding: 8px 14px; background: transparent; color: var(--danger);
+    border: 1px solid var(--danger); border-radius: 8px; cursor: pointer;
+    font-weight: 500; font-size: 13px;
+  }
+  .reset-btn:hover { background: var(--danger); color: white; }
   .cart-btn {
     position: relative; padding: 8px 16px; background: var(--text); color: white;
     border: none; border-radius: 8px; cursor: pointer; font-weight: 500;
@@ -192,9 +198,8 @@
 <header>
   <div class="logo" onclick="navigate('home')">Cartly</div>
   <div class="nav-actions">
-    <span id="userPill" class="user-pill" style="display:none;"></span>
-    <button id="logoutBtn" class="btn-secondary" style="display:none;" onclick="logout()">Sign out</button>
-    <button id="loginBtn" class="btn-secondary" onclick="openLogin()">Sign in</button>
+    <span id="userPill" class="user-pill"></span>
+    <button class="reset-btn" onclick="resetSession()" title="Calls mixpanel.reset() and generates a new anonymous user">↻ Reset user</button>
     <button class="cart-btn" onclick="navigate('cart')">
       Cart <span class="cart-count" id="cartCount">0</span>
     </button>
@@ -298,35 +303,6 @@
   <button class="btn-primary" onclick="navigate('home')">Continue shopping</button>
 </div>
 
-<!-- ============================================================ -->
-<!-- LOGIN MODAL                                                   -->
-<!-- ============================================================ -->
-<div class="modal-overlay" id="loginModal">
-  <div class="modal">
-    <h2>Sign in to Cartly</h2>
-    <div class="form-group">
-      <label>Name</label>
-      <input type="text" id="loginName" />
-    </div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="loginEmail" />
-    </div>
-    <div class="form-group">
-      <label>Plan tier</label>
-      <select id="loginTier">
-        <option value="free">Free</option>
-        <option value="pro">Pro</option>
-        <option value="enterprise">Enterprise</option>
-      </select>
-    </div>
-    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-      <button class="btn-secondary" onclick="closeLogin()">Cancel</button>
-      <button class="btn-primary" onclick="submitLogin()">Sign in</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <!-- ============================================================ -->
@@ -350,6 +326,72 @@
   let currentUser = null;
   let activeFilter = "all";
 
+  // ---------- Random user generator ----------
+  // Generates a fresh identified user on every page load. Each refresh creates
+  // a new distinct_id in Mixpanel so you can see clean per-session funnels.
+  const FIRST_NAMES = [
+    "Aarav", "Diya", "Kabir", "Meera", "Rohan", "Anaya", "Vihaan", "Isha",
+    "Arjun", "Saanvi", "Reyansh", "Aditi", "Krish", "Riya", "Ayaan", "Zara",
+    "Dev", "Tara", "Ishaan", "Kiara", "Neel", "Maya", "Aryan", "Priya"
+  ];
+  const LAST_NAMES = [
+    "Sharma", "Patel", "Iyer", "Kapoor", "Reddy", "Nair", "Khan", "Mehta",
+    "Singh", "Banerjee", "Joshi", "Gupta", "Rao", "Desai", "Chopra", "Verma"
+  ];
+  const PLAN_TIERS = ["free", "pro", "enterprise"];
+
+  function generateRandomUser() {
+    const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+    const last = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+    const tier = PLAN_TIERS[Math.floor(Math.random() * PLAN_TIERS.length)];
+    const suffix = Math.floor(Math.random() * 10000);
+    const name = `${first} ${last}`;
+    const email = `${first.toLowerCase()}.${last.toLowerCase()}${suffix}@mixdemo.com`;
+    return { name, email, tier };
+  }
+
+  function identifyNewUser() {
+    const user = generateRandomUser();
+    currentUser = user;
+
+    // Identify with email as the canonical distinct_id
+    mixpanel.identify(user.email);
+
+    // Single user property as requested — plan_tier
+    mixpanel.people.set({
+      "$name": user.name,
+      "$email": user.email,
+      "plan_tier": user.tier
+    });
+
+    // Update header pill
+    const pill = document.getElementById("userPill");
+    pill.textContent = `${user.name} · ${user.tier}`;
+    pill.style.display = "inline-block";
+
+    console.log(`%c[Cartly] New user identified: ${user.name} (${user.email}) · tier: ${user.tier}`,
+                "color: #16a34a; font-weight: bold;");
+  }
+
+  // ---------- Reset session ----------
+  // Clears Mixpanel identity, wipes local cart state, then generates a brand
+  // new anonymous → identified user. Useful for demoing clean funnels back to back.
+  function resetSession() {
+    //mixpanel.track("Session Reset");
+    mixpanel.reset();
+
+    // Clear local app state too
+    cart = [];
+    window.couponApplied = false;
+    window.discountPct = 0;
+    document.getElementById("cartCount").textContent = "0";
+
+    // New identity
+    identifyNewUser();
+    showToast("Session reset — new user created");
+    navigate("home");
+  }
+
 // ---------- Feature flag-driven variants ----------
 // Assignment is handled entirely by Mixpanel feature flags.
 // get_variant_value auto-fires $experiment_started exposure events on read,
@@ -358,8 +400,6 @@
 
 let ctaVariant = "";
 let bannerVariant = "";
-
-mixpanel.flags.update_context();
 
 async function initExperiments() {
   // Read both variants in parallel — no reason to serialize these calls.
@@ -371,14 +411,14 @@ async function initExperiments() {
   // was rendered. Exposure is already handled by $experiment_started.
   const bannerEl = document.getElementById("promoBanner");
 
-  if (bannerVariant === VARIANTS.VARIANT_A) {
+  if (bannerVariant === "variant_a") {
     bannerEl.innerHTML = "🚚 <strong>Free shipping</strong> on all orders — no minimum.";
     bannerEl.style.background = "#dcfce7";
     bannerEl.style.borderBottom = "1px solid #86efac";
     bannerEl.style.color = "#14532d";
     bannerEl.style.display = "block";
     mixpanel.track("Promo Banner Viewed", { "offer": "free_shipping" });
-  } else if (bannerVariant === VARIANTS.VARIANT_B) {
+  } else if (bannerVariant === "variant_b") {
     bannerEl.innerHTML = "🎟️ Use code <code style='background:#fde68a;padding:2px 6px;border-radius:3px;'>TENOFF</code> at checkout for <strong>10% off</strong>.";
     bannerEl.style.background = "#fef3c7";
     bannerEl.style.borderBottom = "1px solid #fde68a";
@@ -643,50 +683,6 @@ async function initExperiments() {
     navigate("confirmation", { "order_id": orderId });
   }
 
-  // ---------- Login / Identity ----------
-  function openLogin() { document.getElementById("loginModal").classList.add("active"); }
-  function closeLogin() { document.getElementById("loginModal").classList.remove("active"); }
-
-  function submitLogin() {
-    const name = document.getElementById("loginName").value.trim();
-    const email = document.getElementById("loginEmail").value.trim();
-    const tier = document.getElementById("loginTier").value;
-    if (!name || !email) return;
-
-    currentUser = { name, email, tier };
-
-    // Identify the user — links anonymous events to this distinct_id
-    mixpanel.identify(email);
-
-    // Set user profile properties
-    mixpanel.people.set({
-      "$name": name,
-      "$email": email,
-      "plan_tier": tier,
-      "signup_date": new Date().toISOString(),
-      "country": "US"
-    });
-
-    mixpanel.track("Signed In", { "plan_tier": tier });
-
-    document.getElementById("userPill").textContent = `${name} · ${tier}`;
-    document.getElementById("userPill").style.display = "inline-block";
-    document.getElementById("loginBtn").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "inline-block";
-    closeLogin();
-    showToast(`Welcome, ${name}`);
-  }
-
-  // ---------- Logout ----------
-  // Fires Signed Out event, then calls mixpanel.reset() to clear identity
-  // and generate a fresh anonymous distinct_id. Reload picks up the new ID
-  // and re-fetches feature flags against it.
-  function logout() {
-    mixpanel.track("Signed Out");
-    mixpanel.reset();
-    location.reload();
-  }
-
   // ---------- Toast ----------
   function showToast(msg) {
     const t = document.getElementById("toast");
@@ -696,8 +692,9 @@ async function initExperiments() {
   }
 
   // ---------- Init ----------
-  // Render products immediately with default CTA (control), then re-render
-  // once flags are ready and the real variant is known.
+  // Identify a fresh random user immediately on every page load.
+  // Render products, then load experiments and re-render with CTA variant.
+  identifyNewUser();
   renderProducts();
   initExperiments();
   console.log("%c[Mixpanel Demo] Variants assigned by Mixpanel feature flags. Configure in Mixpanel UI.", "color: #6b6b70;");
