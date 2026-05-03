@@ -407,8 +407,8 @@ let bannerVariant = "";
 async function initExperiments() {
   // Read both variants in parallel — no reason to serialize these calls.
   const [cta, banner] = await Promise.all([
-  mixpanel.flags.get_variant_value("cta_wording_test", "Control"),
-  mixpanel.flags.get_variant_value("promo_banner_test", "control")
+  mixpanel.flags.get_variant_value("cta_wording_test", "control"),
+  mixpanel.flags.get_variant_value("promo_banner_test", "Control")
   ]);
   ctaVariant = cta;
   bannerVariant = banner;
@@ -469,7 +469,7 @@ async function initExperiments() {
         <div class="product-name">${p.name}</div>
         <div class="product-price">$${p.price}</div>
         <button onclick="event.stopPropagation(); addToCart('${p.id}')">
-          ${ctaVariant === "Control" ? "Add to Cart" : "Buy Now"}
+          ${ctaVariant === "control" ? "Add to Cart" : "Buy Now"}
         </button>
       </div>
     `).join("");
@@ -510,7 +510,7 @@ async function initExperiments() {
         <div style="font-size: 32px; color: var(--accent); font-weight: 700; margin-bottom: 16px;">$${p.price}</div>
         <p style="margin-bottom: 24px;">A high-quality ${p.name.toLowerCase()} crafted for everyday use. Free shipping on orders over $50.</p>
         <button class="btn-primary" onclick="addToCart('${p.id}')">
-          ${ctaVariant === "Control" ? "Add to Cart" : "Buy Now"}
+          ${ctaVariant === "control" ? "Add to Cart" : "Buy Now"}
         </button>
       </div>
     `;
