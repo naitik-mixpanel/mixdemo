@@ -355,13 +355,16 @@
   // The SDK fetches variants on init; we just read them and render the experience.
   // get_variant_value_sync auto-fires $experiment_started exposure events.
 
+  let ctaVariant = "control";
+  let bannerVariant = "control";
+
   // Wait for flags to be ready, then read variants and render the experience.
   async function initExperiments() {
     // Read CTA experiment variant
-    ctaVariant = await mixpanel.flags.get_variant_value("cta_wording_test", "Control");
+    ctaVariant = await mixpanel.flags.get_variant_value("cta_wording_test", "control");
 
     // Read promo banner experiment variant
-    bannerVariant = await mixpanel.flags.get_variant_value("promo_banner_test", "Control");
+    bannerVariant = await mixpanel.flags.get_variant_value("promo_banner_test", "control");
 
     // Render the promo banner based on assigned variant
     const bannerEl = document.getElementById("promoBanner");
@@ -381,7 +384,7 @@
       mixpanel.track("Promo Banner Viewed", { "variant": "variant_b", "offer": "ten_percent_off" });
     } else {
       // control — no banner shown
-      mixpanel.track("Promo Banner Viewed", { "variant": "Control", "offer": "none" });
+      mixpanel.track("Promo Banner Viewed", { "variant": "control", "offer": "none" });
     }
 
     // Re-render product grid now that CTA variant is known
@@ -461,7 +464,7 @@
         <div style="font-size: 32px; color: var(--accent); font-weight: 700; margin-bottom: 16px;">$${p.price}</div>
         <p style="margin-bottom: 24px;">A high-quality ${p.name.toLowerCase()} crafted for everyday use. Free shipping on orders over $50.</p>
         <button class="btn-primary" onclick="addToCart('${p.id}')">
-          ${ctaVariant === "Control" ? "Add to Cart" : "Buy Now"}
+          ${ctaVariant === "control" ? "Add to Cart" : "Buy Now"}
         </button>
       </div>
     `;
