@@ -192,6 +192,34 @@
     padding: 8px 16px; font-size: 12px; text-align: center; color: #78350f;
   }
   .demo-banner code { background: #fde68a; padding: 2px 6px; border-radius: 3px; }
+  .experiment-pills {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.experiment-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #f3e8ff;
+  color: #6b21a8;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.experiment-pill::before {
+  content: "🧪";
+  font-size: 11px;
+}
+
+/* Distinguish the two experiments visually */
+.experiment-pill.banner-exp {
+  background: #ffedd5;
+  color: #9a3412;
+}
 </style>
 </head>
 <body>
@@ -199,10 +227,11 @@
 <div class="demo-banner" id="promoBanner" style="display:none;"></div>
 
 <header>
-  <div class="logo" onclick="navigate('home')">Cartly</div>
+  <div class="logo" onclick="navigate('home')">MixDemo</div>
   <div class="nav-actions">
-    <span id="userPill" class="user-pill"></span>
-    <button class="reset-btn" onclick="resetSession()" title="Calls mixpanel.reset() and generates a new anonymous user">↻ Reset user</button>
+    <span id="experimentPills" class="experiment-pills"></span>
+    <span id="userPill" class="user-pill mp-block"></span>
+    <button class="reset-btn mp-mask" onclick="resetSession()" title="Calls mixpanel.reset() and generates a new anonymous user">↻ Reset user</button>
     <button class="cart-btn" onclick="renderCart(); navigate('cart')">
       Cart <span class="cart-count" id="cartCount">0</span>
     </button>
@@ -490,9 +519,24 @@ async function initExperiments() {
 
   // Re-render product grid now that CTA variant is known.
   renderProducts();
-
+  renderExperimentPills();
   console.log(`%c[Mixpanel Demo] CTA experiment: ${ctaVariant}`, "color: #7856ff; font-weight: bold;");
   console.log(`%c[Mixpanel Demo] Banner experiment: ${bannerVariant}`, "color: #7856ff; font-weight: bold;");
+}
+function renderExperimentPills() {
+  const container = document.getElementById("experimentPills");
+  if (!container) return;
+
+  const pills = [];
+
+  if (ctaVariant) {
+    pills.push(`<span class="experiment-pill cta-exp">CTA: ${ctaVariant}</span>`);
+  }
+  if (bannerVariant) {
+    pills.push(`<span class="experiment-pill banner-exp">Banner: ${bannerVariant}</span>`);
+  }
+
+  container.innerHTML = pills.join("");
 }
 
   // ---------- Navigation ----------
