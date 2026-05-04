@@ -26,7 +26,16 @@
     record_max_ms: 86400000,
     record_network: true,                    // capture network requests in replays
     record_heatmap_data: true,               // capture click/scroll heatmap data
-    autocapture: false,                      // we'll do explicit tracking for clarity
+    autocapture: {
+      pageview: false,
+      click: false,
+      dead_click: true,
+      input: false,
+      rage_click: true,
+      scroll: true,
+      submit: false,
+      capture_text_content: false,
+  },                      // we'll do explicit tracking for clarity
     flags: true,                            // enable feature flag SDK
     loaded: async function(mp) {
     await initExperiments();
