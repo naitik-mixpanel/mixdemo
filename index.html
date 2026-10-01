@@ -245,6 +245,34 @@
   background: #ffedd5;
   color: #9a3412;
 }
+
+/* ---- Hero banner ---- */
+.hero-banner {
+  position: relative; overflow: hidden;
+  border-radius: 12px; border: 1px solid var(--border);
+  min-height: 280px; margin-bottom: 32px;
+  display: flex; align-items: center;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover; z-index: 0;
+}
+.hero-content {
+  position: relative; z-index: 1; width: 100%; padding: 48px 40px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 100%);
+  min-height: 280px; display: flex; flex-direction: column; justify-content: center;
+}
+.hero-eyebrow {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #c4b5fd; margin-bottom: 8px;
+}
+.hero-title {
+  font-size: 40px; font-weight: 800; line-height: 1.15;
+  color: #fff; max-width: 560px; margin-bottom: 12px;
+}
+.hero-sub { color: rgba(255,255,255,0.85); margin-bottom: 24px; }
+.hero-content .btn-primary { align-self: flex-start; }
+
 </style>
 </head>
 <body>
@@ -267,6 +295,19 @@
 <!-- HOME PAGE                                                     -->
 <!-- ============================================================ -->
 <div id="home" class="page active">
+  <div class="hero-banner">
+  <img class="hero-bg" alt=""
+       src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80" />
+  <div class="hero-content">
+    <div class="hero-eyebrow">New season</div>
+    <h2 class="hero-title">Well-made goods for everyday life</h2>
+    <p class="hero-sub">Thoughtfully designed essentials, built to last.</p>
+    <button class="btn-primary"
+            onclick="document.getElementById('productGrid').scrollIntoView({ behavior: 'smooth' })">
+      Shop the collection
+    </button>
+  </div>
+</div>
   <h1 style="margin-bottom: 8px;">Shop everything</h1>
   <p style="color: var(--muted); margin-bottom: 24px;">Curated essentials for your everyday.</p>
 
