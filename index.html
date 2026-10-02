@@ -57,6 +57,7 @@
     await initExperiments();
   }
   });
+  mixpanel.register({ $mp_user_agent: navigator.userAgent });
 </script>
 
 <style>
