@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" data-page="cart">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your cart — MixDemo</title>
+<script src="assets/mixpanel-setup.js"></script>
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div class="demo-banner" id="promoBanner" style="display:none;"></div>
+<header id="siteHeader"></header>
+
+<!-- ============================================================ -->
+<!-- CART PAGE                                                     -->
+<!-- ============================================================ -->
+<main class="page">
+  <nav class="breadcrumbs" id="breadcrumbs" aria-label="Breadcrumb"></nav>
+  <h1 style="margin-bottom: 24px;">Your cart</h1>
+  <div id="cartItems"></div>
+
+  <div class="coupon-row" id="couponRow" style="display:none;">
+    <input type="text" id="couponInput" placeholder="Coupon code" />
+    <button class="btn-secondary" style="padding: 8px 16px;" onclick="applyCoupon()">Apply</button>
+  </div>
+
+  <div class="cart-summary" id="cartSummary"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="assets/app.js"></script>
+<script src="assets/pages/cart.js"></script>
+</body>
+</html>

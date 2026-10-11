@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" data-page="productDetail">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Product — MixDemo</title>
+<script src="assets/mixpanel-setup.js"></script>
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div class="demo-banner" id="promoBanner" style="display:none;"></div>
+<header id="siteHeader"></header>
+
+<!-- ============================================================ -->
+<!-- PRODUCT DETAIL PAGE — template, filled from ?id=<slug>        -->
+<!-- ============================================================ -->
+<main class="page">
+  <nav class="breadcrumbs" id="breadcrumbs" aria-label="Breadcrumb"></nav>
+  <div id="productDetailContent"></div>
+  <section class="related" id="related"></section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="assets/app.js"></script>
+<script src="assets/pages/product.js"></script>
+</body>
+</html>
