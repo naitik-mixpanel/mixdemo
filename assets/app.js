@@ -110,22 +110,49 @@ function buildProductEntry(item) {
   };
 }
 
-function addToCart(productId) {
+// Properties that say who drove an action: the shopper ("site") or the
+// shopping assistant ("agent"), so funnels can compare the two.
+function sourceProps(agentConversationId) {
+  return agentConversationId
+    ? { "source": "agent", "agent_conversation_id": agentConversationId }
+    : { "source": "site" };
+}
+
+function addToCart(productId, { qty = 1, agentConversationId = null } = {}) {
   const p = findProduct(productId);
   if (!p) return;
-  const existing = cart.find(x => x.id === productId);
-  if (existing) existing.qty += 1;
-  else cart.push({ id: productId, qty: 1 });
+  const existing = cart.find(x => x.id === p.id);
+  if (existing) existing.qty += qty;
+  else cart.push({ id: p.id, qty });
   saveCart();
   showToast(`${p.name} added to cart`);
 
   // Add to Cart — products array contains only the item just added.
   // Top-level cart_size / cart_value remain as headline rollup metrics.
   mixpanel.track("Add to Cart", {
-    "products": [buildProductEntry({ ...p, qty: 1 })],
+    "products": [buildProductEntry({ ...p, qty })],
     "cart_size": cartSize(),
-    "cart_value": cartSubtotal()
+    "cart_value": cartSubtotal(),
+    ...sourceProps(agentConversationId)
   });
+}
+
+// Checkout Started — full cart contents in products array, then go to the
+// checkout page once the event is safely queued. Shipping fields included
+// so we can analyze drop-off by shipping cost.
+function startCheckout(agentConversationId = null) {
+  const items = cartItems();
+  if (items.length === 0) return Promise.resolve(false);
+  const { subtotal, shipping } = cartTotals();
+  return trackAndNavigate("Checkout Started", {
+    "products": items.map(buildProductEntry),
+    "cart_size": cartSize(),
+    "cart_value": subtotal,
+    "shipping_cost": shipping,
+    "free_shipping": shipping === 0,
+    "logged_in": !!currentUser,
+    ...sourceProps(agentConversationId)
+  }, "checkout.html").then(() => true);
 }
 
 // Any element with data-add-to-cart="<product id>" is an add-to-cart button.

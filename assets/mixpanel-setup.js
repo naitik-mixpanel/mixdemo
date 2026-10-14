@@ -22,7 +22,8 @@ const KEYS = {
   variants: "mixdemo.variants",
   bannerViewed: "mixdemo.bannerViewed",
   lastOrder: "mixdemo.lastOrder",
-  flash: "mixdemo.flash"
+  flash: "mixdemo.flash",
+  agent: "mixdemo.agent"
 };
 
 const store = {

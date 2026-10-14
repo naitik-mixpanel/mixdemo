@@ -79,24 +79,6 @@ function applyCoupon() {
   }
 }
 
-// ---------- Checkout ----------
-function startCheckout() {
-  const items = cartItems();
-  if (items.length === 0) return;
-  const { subtotal, shipping } = cartTotals();
-
-  // Checkout Started — full cart contents in products array.
-  // Shipping fields included so we can analyze drop-off by shipping cost.
-  trackAndNavigate("Checkout Started", {
-    "products": items.map(buildProductEntry),
-    "cart_size": cartSize(),
-    "cart_value": subtotal,
-    "shipping_cost": shipping,
-    "free_shipping": shipping === 0,
-    "logged_in": !!currentUser
-  }, "checkout.html");
-}
-
 // ---------- Init ----------
 renderBreadcrumbs([
   { label: "Home", href: "index.html" },

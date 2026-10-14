@@ -1,0 +1,31 @@
+name = "mixdemo-agent"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Model used for every turn. Must match Mixpanel's rate card exactly for cost.
+MODEL = "claude-haiku-5-5"
+# Mixpanel project token (public — it's already in the site's JS). Used to
+# authenticate OTLP span exports to Agent Intelligence.
+MIXPANEL_TOKEN = "ea1bc069fc5c58a1f102e62b7b0e6e08"
+MIXPANEL_OTEL_URL = "https://ingestion-us.mixpanel.com/v1/ai/otel/traces"
+# Comma-separated list of origins allowed to call this Worker.
+ALLOWED_ORIGINS = "https://naitik-mixpanel.github.io,http://localhost:8765"
+
+# Leave empty to call api.anthropic.com directly. Set to the LiteLLM proxy's
+# base URL (e.g. "https://litellm.example.com") to route through the gateway.
+LLM_BASE_URL = ""
+
+# The key (Anthropic API key or LiteLLM virtual key) is a secret, never a var:
+#   npx wrangler secret put LLM_API_KEY
+# For local dev, put it in worker/.dev.vars (gitignored) instead.
+
+# Per-IP request limit: 20 model calls per minute.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 20
+  period = 60
