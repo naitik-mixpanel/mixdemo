@@ -12,7 +12,7 @@
 
 // Local dev talks to `wrangler dev`. Set the production URL after
 // `wrangler deploy`; while it's empty the widget stays hidden on the live site.
-const AGENT_PROD_URL = "";
+const AGENT_PROD_URL = "https://mixdemo-agent.naitik-soni.workers.dev/chat";
 const AGENT_API_URL = ["localhost", "127.0.0.1"].includes(window.location.hostname)
   ? "http://localhost:8787/chat"
   : AGENT_PROD_URL;

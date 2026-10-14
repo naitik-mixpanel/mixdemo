@@ -2,6 +2,9 @@ name = "mixdemo-agent"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 compatibility_flags = ["nodejs_compat"]
+# Serve on https://mixdemo-agent.<subdomain>.workers.dev; no per-version preview URLs.
+workers_dev = true
+preview_urls = false
 
 [vars]
 # Model used for every turn. Must match Mixpanel's rate card exactly for cost.
