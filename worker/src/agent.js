@@ -6,7 +6,8 @@
 // them against the real catalog and cart (and validates every input again).
 
 export const AGENT_NAME = "mixdemo-shop-agent";
-export const PROMPT_VERSION = "2026-10-14";
+// "v" prefix keeps Mixpanel from typing this as a date.
+export const PROMPT_VERSION = "v2026-10-14";
 
 export const SYSTEM_PROMPT = `You are the MixDemo shopping assistant, a chat widget on the MixDemo online store. You help shoppers find products, open product pages, add items to their cart, review the cart, and get to checkout.
 
