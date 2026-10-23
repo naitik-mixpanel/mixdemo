@@ -18,7 +18,7 @@ ALLOWED_ORIGINS = "https://naitik-mixpanel.github.io,http://localhost:8765"
 
 # Leave empty to call api.anthropic.com directly. Set to the LiteLLM proxy's
 # base URL (e.g. "https://litellm.example.com") to route through the gateway.
-LLM_BASE_URL = "https://litellm.mixpanel.org"
+LLM_BASE_URL = ""
 
 # The key (Anthropic API key or LiteLLM virtual key) is a secret, never a var:
 #   npx wrangler secret put LLM_API_KEY
